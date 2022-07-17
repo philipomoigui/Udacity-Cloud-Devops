@@ -1,0 +1,41 @@
+Description:
+    This template provisions a security group and an Ec2 instance
+
+Resources:
+    MyWebccessSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: My web access security group
+            VpcId: vpc-06c1d8a673ec8785b
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 80
+                ToPort: 80
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 443
+                ToPort: 443
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 22
+                ToPort: 22
+                CidrIp: 0.0.0.0/0
+            
+    MyWebServerInstance:
+        Type: AWS::EC2::Instance
+        Properties:
+           ImageId: ami-0cff7528ff583bf9a
+           InstanceType: t2.micro
+           NetworkInterfaces: 
+            - AssociatePublicIpAddress: "true"
+              DeviceIndex: "0"
+              GroupSet: 
+                - Ref: "MyWebccessSecurityGroup"
+              SubnetId: subnet-0d1f51095325c5c1e
+           UserData:
+            Fn::Base64: !Sub  |
+              #!/bin/bash
+              sudo yum update -y
+              sudo yum install -y httpd
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
